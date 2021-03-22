@@ -1,8 +1,6 @@
 #!/usr/bin/env lemon
 #version 0.2
 
-const chalk = npm.chalk;
-
 cli.accept({
 	pageURL: ["#0", String, "The URL to a webpage to search"],
 	
@@ -14,6 +12,8 @@ cli.accept({
 	oldest: ["--oldest", moment, "The date of the oldest version to consider"],
 	newest: ["--newest", moment, "The date of the newest version to consider"]
 });
+
+const chalk = npm.chalk;
 
 const webArchiveTimemapBaseURL = "http://web.archive.org/web/timemap/link/";
 
