@@ -11,7 +11,8 @@ cli.accept({
 	predicateFunction: ["-f --function", eval, "A JavaScript function predicate, to execute against page DOM"],
 	inversePredicate: ["-i --inverse", Boolean, "Inverses the predicate (good is bad, bad is good)"],
 	
-	oldest: ["--oldest", moment, "The date of the oldest version to consider"]
+	oldest: ["--oldest", moment, "The date of the oldest version to consider"],
+	newest: ["--newest", moment, "The date of the newest version to consider"]
 });
 
 const webArchiveTimemapBaseURL = "http://web.archive.org/web/timemap/link/";
@@ -135,9 +136,20 @@ cli.tell(chalk.blue(`Getting memento list for ${cli.args.pageURL}...`));
 const allMementos = await getMementosForURL(cli.args.pageURL);
 let filteredText = "";
 
-if (cli.args.oldest) {
-	const oldestIndex = closestTimeIndexInArray(allMementos.map(memento => memento.date.unix()), cli.args.oldest.unix());
-	filteredMementos = allMementos.slice(oldestIndex);
+if (cli.args.oldest || cli.args.newest) {
+	const allTimes = allMementos.map(memento => memento.date.unix());
+	
+	const oldestIndex =
+		cli.args.oldest
+		? closestTimeIndexInArray(allTimes, cli.args.oldest.unix())
+		: 0;
+	
+	const newestIndex =
+		cli.args.newest
+		? closestTimeIndexInArray(allTimes, cli.args.newest.unix())
+		: allMementos.length - 1;
+	
+	filteredMementos = allMementos.slice(oldestIndex, newestIndex);
 	filteredText = ` (out of ${format.number(allMementos.length, "memento", 0)})`;
 } else {
 	filteredMementos = allMementos;
