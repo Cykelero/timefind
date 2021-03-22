@@ -10,6 +10,8 @@ cli.accept({
 	predicateRegex: ["-r --regex", RegExp, "A regex predicate, to be matched against page source"],
 	predicateFunction: ["-f --function", eval, "A JavaScript function predicate, to execute against page DOM"],
 	inversePredicate: ["-i --inverse", Boolean, "Inverses the predicate (good is bad, bad is good)"],
+	
+	oldest: ["--oldest", moment, "The date of the oldest version to consider"]
 });
 
 const webArchiveTimemapBaseURL = "http://web.archive.org/web/timemap/link/";
@@ -125,14 +127,26 @@ function closestTimeIndexInArray(array, time) {
 }
 
 // Run
+let filteredMementos = null;
+
 // // Get memento list
 cli.tell(chalk.blue(`Getting memento list for ${cli.args.pageURL}...`));
-const mementos = await getMementosForURL(cli.args.pageURL);
 
-const firstMemento = mementos[0];
-const lastMemento = mementos[mementos.length - 1];
+const allMementos = await getMementosForURL(cli.args.pageURL);
+let filteredText = "";
 
-cli.tell(`Got ${format.number(mementos.length, "memento", 0)}, from ${format.date(firstMemento.date)} to ${format.date(lastMemento.date)}.`);
+if (cli.args.oldest) {
+	const oldestIndex = closestTimeIndexInArray(allMementos.map(memento => memento.date.unix()), cli.args.oldest.unix());
+	filteredMementos = allMementos.slice(oldestIndex);
+	filteredText = ` (out of ${format.number(allMementos.length, "memento", 0)})`;
+} else {
+	filteredMementos = allMementos;
+}
+
+const firstMemento = filteredMementos[0];
+const lastMemento = filteredMementos[filteredMementos.length - 1];
+
+cli.tell(`Got ${format.number(filteredMementos.length, "memento", 0)}, from ${format.date(firstMemento.date)} to ${format.date(lastMemento.date)}${filteredText}.`);
 
 
 // Check extremities
@@ -152,7 +166,7 @@ if (await lastMemento.isGood) {
 // // Start the search
 cli.tell("");
 cli.tell(chalk.blue("Searching..."));
-let currentRange = mementos;
+let currentRange = filteredMementos;
 
 while (currentRange.length > 2) {
 	// Find midpoint memento
