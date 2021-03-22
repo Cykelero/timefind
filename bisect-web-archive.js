@@ -107,6 +107,23 @@ class Memento {
 	}
 }
 
+function closestTimeIndexInArray(array, time) {
+	let matchIndex = 0;
+	
+	for (let candidateIndex = 1; candidateIndex < array.length; candidateIndex++) {
+		const candidate = array[candidateIndex];
+		
+		const currentMatchDistance = Math.abs(array[matchIndex] - time);
+		const candidateDistance = Math.abs(candidate - time);
+		
+		if (candidateDistance < currentMatchDistance) {
+			matchIndex = candidateIndex;
+		}
+	}
+	
+	return matchIndex
+}
+
 // Run
 // // Get memento list
 cli.tell(`Downloading memento list for ${cli.args.pageURL}...`);
@@ -138,25 +155,18 @@ cli.tell("Searching...");
 let currentRange = mementos;
 
 while (currentRange.length > 2) {
-	let midpointMemento = null;
-	
 	// Find midpoint memento
 	const midpointTime = (currentRange[0].date.unix() + currentRange[currentRange.length - 1].date.unix()) / 2;
 	
-	midpointMemento = currentRange[1];
-	for (let index = 2; index < currentRange.length - 1; index++) {
-		const memento = currentRange[index];
-		
-		const currentMidpointDistance = Math.abs(midpointMemento.date.unix() - midpointTime);
-		const mementoDistance = Math.abs(memento.date.unix() - midpointTime);
-		
-		if (mementoDistance < currentMidpointDistance) {
-			midpointMemento = memento;
-		}
-	}
+	const midpointIndex = closestTimeIndexInArray(
+		currentRange
+			.slice(1, -1)
+			.map(memento => memento.date.unix()),
+		midpointTime
+	) + 1;
+	const midpointMemento = currentRange[midpointIndex];
 	
 	// Evaluate memento, shrink range
-	const midpointIndex = currentRange.indexOf(midpointMemento);
 	const mementoString = `${format.date(midpointMemento.date)} (${midpointMemento.url})`;
 	if (await midpointMemento.isGood) {
 		cli.tell("Good: " + mementoString);
