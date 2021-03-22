@@ -15,8 +15,20 @@ cli.accept({
 const webArchiveTimemapBaseURL = "http://web.archive.org/web/timemap/link/";
 
 async function getMementosForURL(url) {
-	const timemap = await net.getText(webArchiveTimemapBaseURL + url);
+	let timemap;
 	
+	// Get and cache timemap
+	const timemapCache = here.file(url.replace(/\//g, "-") + ".timemap-cache.txt");
+	
+	if (timemapCache.exists) {
+		timemap = timemapCache.content;
+	} else {
+		timemap = await net.getText(webArchiveTimemapBaseURL + url);
+		timemapCache.make();
+		timemapCache.content = timemap;
+	}
+	
+	// Parse and return
 	const mementoLines = timemap.split("\n");
 	const mementos = mementoLines
 		.filter(mementoLine => /\brel="memento"/.test(mementoLine))
