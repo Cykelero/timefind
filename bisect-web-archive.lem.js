@@ -104,6 +104,10 @@ class Memento {
 			resolve(self._good);
 		});
 	}
+	
+	toString() {
+		return `${format.date(this.date)} (${this.url})`;
+	}
 
 	async _getEvaluation() {
 		return await evaluateURL(this.url);
@@ -169,11 +173,13 @@ if (!await firstMemento.isGood) {
 	cli.tell(chalk.red(`The oldest version of the page (${firstMemento.url}) is ` + chalk.bold("bad") + ". Aborting."));
 	process.exit(1);
 }
+cli.tell(chalk.bold("Good: ") + firstMemento);
 
 if (await lastMemento.isGood) {
 	cli.tell(chalk.red(`The newest version of the page (${lastMemento.url}) is ` + chalk.bold("good") + ". Aborting."));
 	process.exit(1);
 }
+cli.tell(chalk.bold("Bad: ") + lastMemento);
 
 // // Start the search
 cli.tell("");
@@ -193,12 +199,11 @@ while (currentRange.length > 2) {
 	const midpointMemento = currentRange[midpointIndex];
 	
 	// Evaluate memento, shrink range
-	const mementoString = `${format.date(midpointMemento.date)} (${midpointMemento.url})`;
 	if (await midpointMemento.isGood) {
-		cli.tell("Good: " + mementoString);
+		cli.tell(chalk.bold("Good: ") + midpointMemento);
 		currentRange = currentRange.slice(midpointIndex);
 	} else {
-		cli.tell("Bad: " + mementoString);
+		cli.tell(chalk.bold("Bad: ") + midpointMemento);
 		currentRange = currentRange.slice(0, midpointIndex + 1);
 	}
 }
@@ -209,5 +214,5 @@ const firstBad = currentRange[1];
 
 cli.tell("");
 cli.tell(chalk.blue("Bisecting completed!"));
-cli.tell(`Last good version is ${chalk.bold(format.date(lastGood.date))} (${chalk.bold(lastGood.url)}).`);
-cli.tell(`First bad version is ${chalk.bold(format.date(firstBad.date))} (${chalk.bold(firstBad.url)}).`);
+cli.tell(`Last good version is ${chalk.bold(lastGood)}.`);
+cli.tell(`First bad version is ${chalk.bold(firstBad)}.`);
