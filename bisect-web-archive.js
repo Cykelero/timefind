@@ -126,7 +126,7 @@ function closestTimeIndexInArray(array, time) {
 
 // Run
 // // Get memento list
-cli.tell(`Downloading memento list for ${cli.args.pageURL}...`);
+cli.tell(chalk.blue(`Getting memento list for ${cli.args.pageURL}...`));
 const mementos = await getMementosForURL(cli.args.pageURL);
 
 const firstMemento = mementos[0];
@@ -137,7 +137,7 @@ cli.tell(`Got ${format.number(mementos.length, "memento", 0)}, from ${format.dat
 
 // Check extremities
 cli.tell("");
-cli.tell("Checking extremities...");
+cli.tell(chalk.blue("Checking extremities..."));
 
 if (!await firstMemento.isGood) {
 	cli.tell(chalk.red(`The oldest version of the page (${firstMemento.url}) is ` + chalk.bold("bad") + ". Aborting."));
@@ -151,7 +151,7 @@ if (await lastMemento.isGood) {
 
 // // Start the search
 cli.tell("");
-cli.tell("Searching...");
+cli.tell(chalk.blue("Searching..."));
 let currentRange = mementos;
 
 while (currentRange.length > 2) {
@@ -182,6 +182,6 @@ const lastGood = currentRange[0];
 const firstBad = currentRange[1];
 
 cli.tell("");
-cli.tell("Bisecting completed!");
+cli.tell(chalk.blue("Bisecting completed!"));
 cli.tell(`Last good version is ${chalk.bold(format.date(lastGood.date))} (${chalk.bold(lastGood.url)}).`);
 cli.tell(`First bad version is ${chalk.bold(format.date(firstBad.date))} (${chalk.bold(firstBad.url)}).`);
