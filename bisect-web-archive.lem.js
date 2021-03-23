@@ -9,8 +9,8 @@ cli.accept({
 	predicateFunction: ["-f --function", eval, "A JavaScript function predicate, to execute against page DOM"],
 	inversePredicate: ["-i --inverse", Boolean, "Inverses the predicate (good is bad, bad is good)"],
 	
-	oldest: ["--oldest", moment, "The date of the oldest version to consider"],
-	newest: ["--newest", moment, "The date of the newest version to consider"]
+	oldest: ["--oldest", moment, "The date of the oldest snapshot to consider"],
+	newest: ["--newest", moment, "The date of the newest snapshot to consider"]
 });
 
 const chalk = npm.chalk;
@@ -135,7 +135,7 @@ function closestTimeIndexInArray(array, time) {
 let filteredMementos = null;
 
 // // Get memento list
-cli.tell(chalk.blue(`Getting memento list for ${cli.args.pageURL}...`));
+cli.tell(chalk.blue(`Getting snapshot list for ${cli.args.pageURL}...`));
 
 const allMementos = await getMementosForURL(cli.args.pageURL);
 let filteredText = "";
@@ -154,16 +154,16 @@ if (cli.args.oldest || cli.args.newest) {
 		: allMementos.length - 1;
 	
 	filteredMementos = allMementos.slice(oldestIndex, newestIndex);
-	filteredText = ` (out of ${format.number(allMementos.length, "memento", 0)})`;
+	filteredText = ` (out of ${format.number(allMementos.length, "snapshot", 0)})`;
 } else {
 	filteredMementos = allMementos;
 }
 
 if (filteredMementos.length < 2) {
 	if (filteredMementos.length === 0) {
-		cli.tell(chalk.red(`Can't perform search: no memento available.`));
+		cli.tell(chalk.red(`Can't perform search: no snapshot available.`));
 	} else {
-		cli.tell(chalk.red(`Can't perform search: only ${format.number(filteredMementos.length, "memento", 0)} available.`));
+		cli.tell(chalk.red(`Can't perform search: only ${format.number(filteredMementos.length, "snapshot", 0)} available.`));
 	}
 	process.exit(1);
 }
@@ -171,7 +171,7 @@ if (filteredMementos.length < 2) {
 const firstMemento = filteredMementos[0];
 const lastMemento = filteredMementos[filteredMementos.length - 1];
 
-cli.tell(`Got ${format.number(filteredMementos.length, "memento", 0)}, from ${format.date(firstMemento.date)} to ${format.date(lastMemento.date)}${filteredText}.`);
+cli.tell(`Got ${format.number(filteredMementos.length, "snapshot", 0)}, from ${format.date(firstMemento.date)} to ${format.date(lastMemento.date)}${filteredText}.`);
 
 
 // Check extremities
@@ -179,13 +179,13 @@ cli.tell("");
 cli.tell(chalk.blue("Checking extremities..."));
 
 if (!await firstMemento.isGood) {
-	cli.tell(chalk.red(`The oldest version of the page (${firstMemento.url}) is ` + chalk.bold("bad") + ". Aborting."));
+	cli.tell(chalk.red(`The oldest snapshot of the page (${firstMemento.url}) is ` + chalk.bold("bad") + ". Aborting."));
 	process.exit(1);
 }
 cli.tell(chalk.bold("Good: ") + firstMemento);
 
 if (await lastMemento.isGood) {
-	cli.tell(chalk.red(`The newest version of the page (${lastMemento.url}) is ` + chalk.bold("good") + ". Aborting."));
+	cli.tell(chalk.red(`The newest snapshot of the page (${lastMemento.url}) is ` + chalk.bold("good") + ". Aborting."));
 	process.exit(1);
 }
 cli.tell(chalk.bold("Bad: ") + lastMemento);
@@ -223,5 +223,5 @@ const firstBad = currentRange[1];
 
 cli.tell("");
 cli.tell(chalk.blue("Bisecting completed!"));
-cli.tell(`Last good version is ${chalk.bold(lastGood)}.`);
-cli.tell(`First bad version is ${chalk.bold(firstBad)}.`);
+cli.tell(`Last good snapshot is ${chalk.bold(lastGood)}.`);
+cli.tell(`First bad snapshot is ${chalk.bold(firstBad)}.`);
