@@ -159,6 +159,15 @@ if (cli.args.oldest || cli.args.newest) {
 	filteredMementos = allMementos;
 }
 
+if (filteredMementos.length < 2) {
+	if (filteredMementos.length === 0) {
+		cli.tell(chalk.red(`Can't perform search: no memento available.`));
+	} else {
+		cli.tell(chalk.red(`Can't perform search: only ${format.number(filteredMementos.length, "memento", 0)} available.`));
+	}
+	process.exit(1);
+}
+
 const firstMemento = filteredMementos[0];
 const lastMemento = filteredMementos[filteredMementos.length - 1];
 
