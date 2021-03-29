@@ -10,26 +10,43 @@ cli.accept({
 	inversePredicate: ["-i --inverse", Boolean, "Inverses the predicate (good is bad, bad is good)"],
 	
 	oldest: ["--oldest", moment, "The date of the oldest snapshot to consider"],
-	newest: ["--newest", moment, "The date of the newest snapshot to consider"]
+	newest: ["--newest", moment, "The date of the newest snapshot to consider"],
+	
+	noCache: ["--no-cache", Boolean, "Skips the network request cache"],
+	clearCache: ["--clear-cache", Boolean, "Clears the network request cache"]
 });
 
 const chalk = npm.chalk;
 
 const webArchiveTimemapBaseURL = "http://web.archive.org/web/timemap/link/";
 
-async function getMementosForURL(url) {
-	let timemap;
+const cacheFolder = home.folder(".cache/timefind/");
+const maxTimemapCacheAge = moment.duration(1, "week");
+
+async function getTextAtURLWithCache(url, maxAge) {
+	const sanitizedURL = url.replace(/\//g, "-");
+	const cacheFile = cacheFolder.file(sanitizedURL + ".page-cache.txt");
 	
-	// Get and cache timemap
-	const timemapCache = here.file(url.replace(/\//g, "-") + ".timemap-cache.txt");
+	const cacheForever = !maxAge
+	const oldestCacheDate = !cacheForever && moment().subtract(maxAge);
 	
-	if (timemapCache.exists) {
-		timemap = timemapCache.content;
-	} else {
-		timemap = await net.getText(webArchiveTimemapBaseURL + url);
-		timemapCache.make();
-		timemapCache.content = timemap;
+	const readCache =
+		!cli.args.noCache
+		&& cacheFile.exists
+		&& (cacheForever || cacheFile.dateCreated.isAfter(oldestCacheDate))
+	
+	if (!readCache) {
+		text = await net.getText(url);
+		
+		cacheFile.make(true);
+		cacheFile.content = text;
 	}
+	
+	return cacheFile.content;
+}
+
+async function getMementosForURL(url) {
+	const timemap = await getTextAtURLWithCache(webArchiveTimemapBaseURL + url, maxTimemapCacheAge);
 	
 	// Parse and return
 	const mementoLines = timemap.split("\n");
@@ -51,15 +68,20 @@ async function evaluateURL(url) {
 async function executePredicateForURL(url) {
 	if (cli.args.predicateFunction) {
 		// Execute function
-		const pageDOM = await net.getDOM(url);
+		const pageSource = await getTextAtURLWithCache(url);
+		const parsedPage = new (npm.jsdom.JSDOM)(pageSource, {url: url});
+		const pageDOM = parsedPage.window.document;
+		
 		return cli.args.predicateFunction(pageDOM);
 	} else if (cli.args.predicateRegex) {
 		// Match regex
-		const pageSource = await net.getText(url);
+		const pageSource = await getTextAtURLWithCache(url);
+		
 		return cli.args.predicateRegex.test(pageSource);
 	} else if (cli.args.predicateString !== null) {
 		// Match string
-		const pageSource = await net.getText(url);
+		const pageSource = await getTextAtURLWithCache(url);
+		
 		return pageSource.includes(cli.args.predicateString);
 	} else {
 		// Ask user
@@ -132,6 +154,13 @@ function closestTimeIndexInArray(array, time) {
 }
 
 // Run
+if (cli.args.clearCache) {
+	cli.tell("Clearing network request cache...");
+	cacheFolder.empty(true);
+	cli.tell("Done.");
+	process.exit(0);
+}
+
 let filteredMementos = null;
 
 // // Get memento list
