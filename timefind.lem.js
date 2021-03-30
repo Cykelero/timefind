@@ -208,13 +208,15 @@ cli.tell("");
 cli.tell(chalk.blue("Checking extremities..."));
 
 if (await firstMemento.matches) {
-	cli.tell(chalk.red(`The oldest snapshot of the page (${firstMemento.url}) ` + chalk.bold("matches") + ". Aborting."));
+	cli.tell(chalk.bold("Matches: ") + firstMemento);
+	cli.tell(chalk.red("The oldest snapshot of the page matches. Aborting."));
 	process.exit(1);
 }
 cli.tell(chalk.bold("Doesn't match: ") + firstMemento);
 
 if (!await lastMemento.matches) {
-	cli.tell(chalk.red(`The newest snapshot of the page (${lastMemento.url}) ` + chalk.bold("doesn't match") + ". Aborting."));
+	cli.tell(chalk.bold("Doesn't match: ") + lastMemento);
+	cli.tell(chalk.red("The newest snapshot of the page doesn't match. Aborting."));
 	process.exit(1);
 }
 cli.tell(chalk.bold("Matches: ") + lastMemento);
