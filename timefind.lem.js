@@ -7,7 +7,7 @@ cli.accept({
 	predicateString: ["#1 -s --string", String, "A string predicate, to search for in page source"],
 	predicateRegex: ["-r --regex", RegExp, "A regex predicate, to be matched against page source"],
 	predicateFunction: ["-f --function", eval, "A JavaScript function predicate, to execute against page DOM"],
-	inversePredicate: ["-i --inverse", Boolean, "Inverses the predicate (good is bad, bad is good)"],
+	inversePredicate: ["-i --inverse", Boolean, "Inverses the predicate (to match, a page must fail the predicate)"],
 	
 	oldest: ["--oldest", moment, "The date of the oldest snapshot to consider"],
 	newest: ["--newest", moment, "The date of the newest snapshot to consider"],
@@ -85,20 +85,20 @@ async function executePredicateForURL(url) {
 		return pageSource.includes(cli.args.predicateString);
 	} else {
 		// Ask user
-		cli.tell("Opening " + chalk.bold(url) + ". Is this page good? " + chalk.gray("(y/n)"));
+		cli.tell("Opening " + chalk.bold(url) + ". Does this page match? " + chalk.gray("(y/n)"));
 		npm.open(url);
 		
 		return await cli.ask("", Boolean);
 		
 		// return new Promise(resolve => {
 		// 	npm. iohook.on("keypress", event => {
-		// 		const isGood = {
+		// 		const matches = {
 		// 			y: true,
 		// 			n: false
 		// 		}[event.keychar];
 		//
-		// 		if (isGood !== undefined) {
-		// 			resolve(isGood);
+		// 		if (matches !== undefined) {
+		// 			resolve(matches);
 		// 		}
 		// 	});
 		//
@@ -112,18 +112,18 @@ class Memento {
 		this.url = /<([^>]+)>/.exec(mementoLine)[1];
 		this.date = moment(/\bdatetime="([^"]+)"/.exec(mementoLine)[1]);
 		
-		this._good = null;
+		this._matches = null;
 	}
 	
-	get isGood() {
+	get matches() {
 		const self = this;
 		
 		return new Promise(async function(resolve) {
-			if (self._good === null) {
-				self._good = await self._getEvaluation();
+			if (self._matches === null) {
+				self._matches = await self._getEvaluation();
 			}
 		
-			resolve(self._good);
+			resolve(self._matches);
 		});
 	}
 	
@@ -207,17 +207,17 @@ cli.tell(`Got ${format.number(filteredMementos.length, "snapshot", 0)}, from ${f
 cli.tell("");
 cli.tell(chalk.blue("Checking extremities..."));
 
-if (!await firstMemento.isGood) {
-	cli.tell(chalk.red(`The oldest snapshot of the page (${firstMemento.url}) is ` + chalk.bold("bad") + ". Aborting."));
+if (await firstMemento.matches) {
+	cli.tell(chalk.red(`The oldest snapshot of the page (${firstMemento.url}) ` + chalk.bold("matches") + ". Aborting."));
 	process.exit(1);
 }
-cli.tell(chalk.bold("Good: ") + firstMemento);
+cli.tell(chalk.bold("Doesn't match: ") + firstMemento);
 
-if (await lastMemento.isGood) {
-	cli.tell(chalk.red(`The newest snapshot of the page (${lastMemento.url}) is ` + chalk.bold("good") + ". Aborting."));
+if (!await lastMemento.matches) {
+	cli.tell(chalk.red(`The newest snapshot of the page (${lastMemento.url}) ` + chalk.bold("doesn't match") + ". Aborting."));
 	process.exit(1);
 }
-cli.tell(chalk.bold("Bad: ") + lastMemento);
+cli.tell(chalk.bold("Matches: ") + lastMemento);
 
 // // Start the search
 cli.tell("");
@@ -237,20 +237,20 @@ while (currentRange.length > 2) {
 	const midpointMemento = currentRange[midpointIndex];
 	
 	// Evaluate memento, shrink range
-	if (await midpointMemento.isGood) {
-		cli.tell(chalk.bold("Good: ") + midpointMemento);
-		currentRange = currentRange.slice(midpointIndex);
-	} else {
-		cli.tell(chalk.bold("Bad: ") + midpointMemento);
+	if (await midpointMemento.matches) {
+		cli.tell(chalk.bold("Matches: ") + midpointMemento);
 		currentRange = currentRange.slice(0, midpointIndex + 1);
+	} else {
+		cli.tell(chalk.bold("Doesn't match: ") + midpointMemento);
+		currentRange = currentRange.slice(midpointIndex);
 	}
 }
 
 // // Display result
-const lastGood = currentRange[0];
-const firstBad = currentRange[1];
+const lastMiss = currentRange[0];
+const firstMatching = currentRange[1];
 
 cli.tell("");
 cli.tell(chalk.blue("Bisecting completed!"));
-cli.tell(`Last good snapshot is ${chalk.bold(lastGood)}.`);
-cli.tell(`First bad snapshot is ${chalk.bold(firstBad)}.`);
+cli.tell(`Last non-matching snapshot is ${chalk.bold(lastMiss)}.`);
+cli.tell(`First matching snapshot is ${chalk.bold(firstMatching)}.`);
