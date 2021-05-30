@@ -4,10 +4,13 @@
 cli.accept({
 	pageURL: ["#0", String, "The URL to a webpage to search"],
 	
-	predicateString: ["#1 -s --string", String, "A string predicate, to search for in page source"],
-	predicateRegex: ["-r --regex", RegExp, "A regex predicate, to be matched against page source"],
+	predicateString: ["#1 -s --string", String, "A string predicate, to search for in page text"],
+	predicateRegex: ["-r --regex", RegExp, "A regex predicate, to be matched against page text"],
 	predicateFunction: ["-f --function", eval, "A JavaScript function predicate, to execute against page DOM"],
+	
 	inversePredicate: ["-i --inverse", Boolean, "Inverses the predicate (to match, a page must fail the predicate)"],
+	fullSource: ["-a --full-source", Boolean, "Matches against full page source, instead of only user-visible text. Only affects string and regex predicates."],
+	caseSensitive: ["-c --case-sensitive", Boolean, "Makes the predicate case-sensitive. Only affects string and regex predicates."],
 	
 	oldest: ["--oldest", moment, "The date of the oldest snapshot to consider"],
 	newest: ["--newest", moment, "The date of the newest snapshot to consider"],
@@ -75,14 +78,64 @@ async function executePredicateForURL(url) {
 		return cli.args.predicateFunction(pageDOM);
 	} else if (cli.args.predicateRegex) {
 		// Match regex
+		let subjectText;
+		let predicateRegex = cli.args.predicateRegex;
+		
+		// // Full source or only user-visible text?
 		const pageSource = await getTextAtURLWithCache(url);
 		
-		return cli.args.predicateRegex.test(pageSource);
-	} else if (cli.args.predicateString !== null) {
+		if (cli.args.fullSource) {
+			subjectText = pageSource;
+		} else {
+			const parsedPage = new (npm.jsdom.JSDOM)(pageSource, {url: url});
+			const pageDOM = parsedPage.window.document;
+			subjectText = pageDOM.body.textContent;
+		}
+		
+		// Case sensitive?
+		if (!cli.args.caseSensitive) {
+			subjectText = subjectText.toLowerCase();
+			predicateRegex.ignoreCase = true;
+		}
+		
+		// Match
+		return predicateRegex.test(subjectText);
+	} else if (cli.args.predicateString) {
 		// Match string
+		let subjectText;
+		let predicateString = cli.args.predicateString;
+		
+		// // Full source or only user-visible text?
 		const pageSource = await getTextAtURLWithCache(url);
 		
-		return pageSource.includes(cli.args.predicateString);
+		if (cli.args.fullSource) {
+			subjectText = pageSource;
+		} else {
+			const parsedPage = new (npm.jsdom.JSDOM)(pageSource, {url: url});
+			const pageDOM = parsedPage.window.document;
+			subjectText = pageDOM.body.textContent;
+		}
+		
+		// Case sensitive?
+		if (!cli.args.caseSensitive) {
+			subjectText = subjectText.toLowerCase();
+			predicateString = predicateString.toLowerCase();
+		}
+		
+		// Match
+		return subjectText.includes(predicateString);
+	} else if (cli.args.predicateUserVisibleString !== null) {
+		// Match string against user text
+		const pageSource = await getTextAtURLWithCache(url);
+		const parsedPage = new (npm.jsdom.JSDOM)(pageSource, {url: url});
+		const pageDOM = parsedPage.window.document;
+		const pageText = pageDOM.body.textContent;
+		
+		if (cli.args.caseSensitive) {
+			return pageText.includes(cli.args.predicateUserVisibleString);
+		} else {
+			return pageText.toLowerCase().includes(cli.args.predicateUserVisibleString.toLowerCase());
+		}
 	} else {
 		// Ask user
 		cli.tell("Opening " + chalk.bold(url) + ". Does this page match? " + chalk.gray("(y/n)"));
