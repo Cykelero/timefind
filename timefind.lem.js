@@ -263,6 +263,16 @@ cli.tell(chalk.blue("Checking extremities..."));
 if (await firstMemento.matches) {
 	cli.tell(chalk.bold("Matches: ") + firstMemento);
 	cli.tell(chalk.red("The oldest snapshot of the page matches. Aborting."));
+	cli.tell("");
+	
+	if (!cli.args.inverse) {
+		cli.tell(`If you are looking for a removal instead of an addition, you can try inverting your predicate using the ${chalk.bold("--inverse")} option. (to match, a page will need to fail the predicate)`);
+	}
+	
+	if (!cli.args.oldest && !cli.args.newest) {
+		cli.tell(`If the change you are looking for was temporary, you can bound your search between dates using ${chalk.bold("----oldest")} and/or ${chalk.bold("--newest")}.`);
+	}
+	
 	process.exit(1);
 }
 cli.tell(chalk.bold("Doesn't match: ") + firstMemento);
@@ -270,6 +280,12 @@ cli.tell(chalk.bold("Doesn't match: ") + firstMemento);
 if (!await lastMemento.matches) {
 	cli.tell(chalk.bold("Doesn't match: ") + lastMemento);
 	cli.tell(chalk.red("The newest snapshot of the page doesn't match. Aborting."));
+	
+	if (!cli.args.oldest && !cli.args.newest) {
+		cli.tell("");
+		cli.tell(`If the change you are looking for was temporary, you can bound your search using the ${chalk.bold("--newest")} option.`);
+	}
+	
 	process.exit(1);
 }
 cli.tell(chalk.bold("Matches: ") + lastMemento);
