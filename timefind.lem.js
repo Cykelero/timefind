@@ -25,7 +25,7 @@ const maxTimemapCacheAge = moment.duration(1, "week");
 
 async function getTextAtURLWithCache(url, maxAge) {
 	const sanitizedURL = url.replace(/\//g, "-");
-	const cacheFile = cacheFolder.file(sanitizedURL + ".page-cache.txt");
+	const cacheFile = cacheFolder.file(sanitizedURL + ".web-cache.txt");
 	
 	const cacheForever = !maxAge
 	const oldestCacheDate = !cacheForever && moment().subtract(maxAge);
@@ -33,7 +33,7 @@ async function getTextAtURLWithCache(url, maxAge) {
 	const readCache =
 		!cli.args.noCache
 		&& cacheFile.exists
-		&& (cacheForever || cacheFile.dateCreated.isAfter(oldestCacheDate))
+		&& (cacheForever || cacheFile.dateModified.isAfter(oldestCacheDate))
 	
 	if (!readCache) {
 		text = await net.getText(url);
