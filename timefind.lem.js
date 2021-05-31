@@ -130,21 +130,6 @@ async function executePredicateForURL(url) {
 		npm.open(url);
 		
 		return await cli.ask("", Boolean);
-		
-		// return new Promise(resolve => {
-		// 	npm. iohook.on("keypress", event => {
-		// 		const matches = {
-		// 			y: true,
-		// 			n: false
-		// 		}[event.keychar];
-		//
-		// 		if (matches !== undefined) {
-		// 			resolve(matches);
-		// 		}
-		// 	});
-		//
-		// 	npm. iohook.start();
-		// });
 	}
 }
 
