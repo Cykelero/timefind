@@ -124,18 +124,6 @@ async function executePredicateForURL(url) {
 		
 		// Match
 		return subjectText.includes(predicateString);
-	} else if (cli.args.predicateUserVisibleString !== null) {
-		// Match string against user text
-		const pageSource = await getTextAtURLWithCache(url);
-		const parsedPage = new (npm.jsdom.JSDOM)(pageSource, {url: url});
-		const pageDOM = parsedPage.window.document;
-		const pageText = pageDOM.body.textContent;
-		
-		if (cli.args.caseSensitive) {
-			return pageText.includes(cli.args.predicateUserVisibleString);
-		} else {
-			return pageText.toLowerCase().includes(cli.args.predicateUserVisibleString.toLowerCase());
-		}
 	} else {
 		// Ask user
 		cli.tell("Opening " + chalk.bold(url) + ". Does this page match? " + chalk.gray("(y/n)"));
