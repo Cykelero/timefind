@@ -27,7 +27,7 @@ const cacheFolder = home.folder(".cache/timefind/");
 const maxTimemapCacheAge = moment.duration(1, "week");
 
 async function getTextAtURLWithCache(url, maxAge) {
-	const sanitizedURL = url.replace(/\//g, "-");
+	const sanitizedURL = url.replace(/[\/:?]/g, "-");
 	const cacheFile = cacheFolder.file(sanitizedURL + ".web-cache.txt");
 	
 	const cacheForever = !maxAge
