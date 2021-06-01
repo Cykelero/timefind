@@ -48,6 +48,25 @@ async function getTextAtURLWithCache(url, maxAge) {
 	return cacheFile.content;
 }
 
+function getSearchableStringsFromPage(pageSource, url) {
+	if (cli.args.fullSource) {
+		return [pageSource];
+	} else {
+		const parsedPage = new (npm.jsdom.JSDOM)(pageSource, {url: url});
+		const pageDOM = parsedPage.window.document;
+		
+		const result = [pageDOM.body.textContent];
+		
+		const annotatedElements = pageDOM.querySelectorAll("[alt], [title]");
+		for (let element of annotatedElements) {
+			if (element.alt) result.push(element.alt);
+			if (element.title) result.push(element.title);
+		}
+		
+		return result;
+	}
+}
+
 async function getMementosForURL(url) {
 	const timemap = await getTextAtURLWithCache(webArchiveTimemapBaseURL + url, maxTimemapCacheAge);
 	
@@ -78,52 +97,29 @@ async function executePredicateForURL(url) {
 		return cli.args.predicateFunction(pageDOM);
 	} else if (cli.args.predicateRegex) {
 		// Match regex
-		let subjectText;
-		let predicateRegex = cli.args.predicateRegex;
+		const subjectStrings = getSearchableStringsFromPage(await getTextAtURLWithCache(url), url);
+		const predicateRegex = cli.args.predicateRegex;
 		
-		// // Full source or only user-visible text?
-		const pageSource = await getTextAtURLWithCache(url);
-		
-		if (cli.args.fullSource) {
-			subjectText = pageSource;
-		} else {
-			const parsedPage = new (npm.jsdom.JSDOM)(pageSource, {url: url});
-			const pageDOM = parsedPage.window.document;
-			subjectText = pageDOM.body.textContent;
-		}
-		
-		// Case sensitive?
+		// // Case sensitive?
 		if (!cli.args.caseSensitive) {
-			subjectText = subjectText.toLowerCase();
 			predicateRegex.ignoreCase = true;
 		}
 		
-		// Match
-		return predicateRegex.test(subjectText);
+		// // Match
+		return subjectStrings.some(subject => predicateRegex.test(subject));
 	} else if (cli.args.predicateString) {
 		// Match string
-		let subjectText;
+		let subjectStrings = getSearchableStringsFromPage(await getTextAtURLWithCache(url), url);
 		let predicateString = cli.args.predicateString;
 		
-		// // Full source or only user-visible text?
-		const pageSource = await getTextAtURLWithCache(url);
-		
-		if (cli.args.fullSource) {
-			subjectText = pageSource;
-		} else {
-			const parsedPage = new (npm.jsdom.JSDOM)(pageSource, {url: url});
-			const pageDOM = parsedPage.window.document;
-			subjectText = pageDOM.body.textContent;
-		}
-		
-		// Case sensitive?
+		// // Case sensitive?
 		if (!cli.args.caseSensitive) {
-			subjectText = subjectText.toLowerCase();
+			subjectStrings = subjectStrings.map(subject => subject.toLowerCase());
 			predicateString = predicateString.toLowerCase();
 		}
 		
-		// Match
-		return subjectText.includes(predicateString);
+		// // Match
+		return subjectStrings.some(subject => subject.includes(predicateString));
 	} else {
 		// Ask user
 		cli.tell("Opening " + chalk.bold(url) + ". Does this page match? " + chalk.gray("(y/n)"));
@@ -243,7 +239,7 @@ if (await firstMemento.matches) {
 	}
 	
 	if (!cli.args.oldest && !cli.args.newest) {
-		cli.tell(`If the change you are looking for was temporary, you can bound your search between dates using ${chalk.bold("----oldest")} and/or ${chalk.bold("--newest")}.`);
+		cli.tell(`If the change you are looking for was temporary, you can bound your search between dates using ${chalk.bold("--oldest")} and/or ${chalk.bold("--newest")}.`);
 	}
 	
 	process.exit(1);
