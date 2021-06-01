@@ -98,11 +98,11 @@ async function executePredicateForURL(url) {
 	} else if (cli.args.predicateRegex) {
 		// Match regex
 		const subjectStrings = getSearchableStringsFromPage(await getTextAtURLWithCache(url), url);
-		const predicateRegex = cli.args.predicateRegex;
+		let predicateRegex = cli.args.predicateRegex;
 		
-		// // Case sensitive?
+		// // Case insensitive?
 		if (!cli.args.caseSensitive) {
-			predicateRegex.ignoreCase = true;
+			predicateRegex = new RegExp(predicateRegex, "i");
 		}
 		
 		// // Match
@@ -112,7 +112,7 @@ async function executePredicateForURL(url) {
 		let subjectStrings = getSearchableStringsFromPage(await getTextAtURLWithCache(url), url);
 		let predicateString = cli.args.predicateString;
 		
-		// // Case sensitive?
+		// // Case insensitive?
 		if (!cli.args.caseSensitive) {
 			subjectStrings = subjectStrings.map(subject => subject.toLowerCase());
 			predicateString = predicateString.toLowerCase();
