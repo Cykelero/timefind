@@ -39,7 +39,7 @@ async function getTextAtURLWithCache(url, maxAge) {
 		&& (cacheForever || cacheFile.dateModified.isAfter(oldestCacheDate))
 	
 	if (!readCache) {
-		text = await net.getText(url);
+		const text = await net.getText(url);
 		
 		cacheFile.make(true);
 		cacheFile.content = text;
