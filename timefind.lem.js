@@ -38,32 +38,15 @@ async function getTextAtURLWithCache(url, maxAge) {
 		&& cacheFile.exists
 		&& (cacheForever || cacheFile.dateModified.isAfter(oldestCacheDate))
 	
-	if (!readCache) {
+	if (readCache) {
+		return cacheFile.content;
+	} else {
 		const text = await net.getText(url);
 		
 		cacheFile.make(true);
 		cacheFile.content = text;
-	}
-	
-	return cacheFile.content;
-}
-
-function getSearchableStringsFromPage(pageSource, url) {
-	if (cli.args.fullSource) {
-		return [pageSource];
-	} else {
-		const parsedPage = new (npm.jsdom.JSDOM)(pageSource, {url: url});
-		const pageDOM = parsedPage.window.document;
 		
-		const result = [pageDOM.body.textContent];
-		
-		const annotatedElements = pageDOM.querySelectorAll("[alt], [title]");
-		for (let element of annotatedElements) {
-			if (element.alt) result.push(element.alt);
-			if (element.title) result.push(element.title);
-		}
-		
-		return result;
+		return text;
 	}
 }
 
@@ -88,16 +71,14 @@ async function evaluateURL(url) {
 }
 
 async function executePredicateForURL(url) {
+	const page = await Page.forURL(url);
+	
 	if (cli.args.predicateFunction) {
 		// Execute function
-		const pageSource = await getTextAtURLWithCache(url);
-		const parsedPage = new (npm.jsdom.JSDOM)(pageSource, {url: url});
-		const pageDOM = parsedPage.window.document;
-		
-		return cli.args.predicateFunction(pageDOM);
+		return cli.args.predicateFunction(page.dom);
 	} else if (cli.args.predicateRegex) {
 		// Match regex
-		const subjectStrings = getSearchableStringsFromPage(await getTextAtURLWithCache(url), url);
+		const subjectStrings = page.getSearchableStrings();
 		let predicateRegex = cli.args.predicateRegex;
 		
 		// // Case insensitive?
@@ -109,7 +90,7 @@ async function executePredicateForURL(url) {
 		return subjectStrings.some(subject => predicateRegex.test(subject));
 	} else if (cli.args.predicateString) {
 		// Match string
-		let subjectStrings = getSearchableStringsFromPage(await getTextAtURLWithCache(url), url);
+		let subjectStrings = page.getSearchableStrings();
 		let predicateString = cli.args.predicateString;
 		
 		// // Case insensitive?
@@ -126,6 +107,43 @@ async function executePredicateForURL(url) {
 		npm.open(url);
 		
 		return await cli.ask("", Boolean);
+	}
+}
+
+class Page {
+	constructor(url, source) {
+		this.url = url;
+		this.source = source;
+	}
+	
+	get dom() {
+		const parsedPage = new (npm.jsdom.JSDOM)(this.source, {url: this.url});
+		return parsedPage.window.document;
+	}
+
+
+	getSearchableStrings() {
+		if (cli.args.fullSource) {
+			// Search full source
+			return [this.source];
+		} else {
+			// Search user-visible text only
+			const result = [this.dom.body.textContent];
+		
+			const annotatedElements = this.dom.querySelectorAll("[alt], [title]");
+			for (let element of annotatedElements) {
+				if (element.alt) result.push(element.alt);
+				if (element.title) result.push(element.title);
+			}
+		
+			return result;
+		}
+	}
+	
+	static async forURL(url, maxAge) {
+		const source = await getTextAtURLWithCache(url, maxAge);
+		
+		return new Page(url, source);
 	}
 }
 
