@@ -257,10 +257,13 @@ cli.tell(chalk.blue("Checking extremities..."));
 
 if (await firstMemento.matches) {
 	cli.tell(chalk.bold("Matches: ") + firstMemento);
-	cli.tell(chalk.red("The oldest snapshot of the page matches. Aborting."));
+
 	cli.tell("");
 	
-	if (!cli.args.inverse) {
+	const invertedPredicateSuffix = cli.args.inversePredicate ? " the inverted predicate" : "";
+	cli.tell(chalk.red(`The oldest snapshot of the page matches${invertedPredicateSuffix}. Aborting.`));
+	
+	if (!cli.args.inversePredicate) {
 		cli.tell(`If you are looking for a removal instead of an addition, you can try inverting your predicate using the ${chalk.bold("--inverse")} option. (to match, a page will need to fail the predicate)`);
 	}
 	
@@ -274,10 +277,13 @@ cli.tell(chalk.bold("Doesn't match: ") + firstMemento);
 
 if (!await lastMemento.matches) {
 	cli.tell(chalk.bold("Doesn't match: ") + lastMemento);
-	cli.tell(chalk.red("The newest snapshot of the page doesn't match. Aborting."));
+	
+	cli.tell("");
+	
+	const invertedPredicateSuffix = cli.args.inversePredicate ? " the inverted predicate" : "";
+	cli.tell(chalk.red(`The newest snapshot of the page doesn't match${invertedPredicateSuffix}. Aborting.`));
 	
 	if (!cli.args.oldest && !cli.args.newest) {
-		cli.tell("");
 		cli.tell(`If the change you are looking for was temporary, you can bound your search using the ${chalk.bold("--newest")} option.`);
 	}
 	
