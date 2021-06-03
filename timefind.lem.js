@@ -143,6 +143,14 @@ class Page {
 	static async forURL(url, maxAge) {
 		const source = await getTextAtURLWithCache(url, maxAge);
 		
+		// Follow redirects
+		const webArchiveRedirectParts = /window.location="(https?:\/\/web.archive.org\/web\/[^"]+)";/.exec(source);
+		if (webArchiveRedirectParts) {
+			const redirectURL = webArchiveRedirectParts[1];
+		
+			return Page.forURL(redirectURL, maxAge);
+		}
+		
 		return new Page(url, source);
 	}
 }
