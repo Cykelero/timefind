@@ -10,7 +10,7 @@ cli.accept({
 	
 	inversePredicate: ["-i --inverse", Boolean, "Inverses the predicate (to match, a page must fail the predicate)"],
 	fullSource: ["-a --full-source", Boolean, "Matches against full page source, instead of only user-visible text. Only affects string and regex predicates."],
-	caseSensitive: ["-c --case-sensitive", Boolean, "Makes the predicate case-sensitive. Only affects string and regex predicates."],
+	basic: ["-b --no-smart", Boolean, "Makes the predicate case-sensitive, doesn't collapse white space, and disables word boundary requirement. Only affects string and regex predicates."],
 	
 	oldest: ["--oldest", moment, "The date of the oldest snapshot to consider"],
 	newest: ["--newest", moment, "The date of the newest snapshot to consider"],
@@ -79,28 +79,40 @@ async function executePredicateForURL(url) {
 	} else if (cli.args.predicateRegex) {
 		// Match regex
 		const subjectStrings = page.getSearchableStrings();
-		let predicateRegex = cli.args.predicateRegex;
+		const predicateRegex = cli.args.predicateRegex;
 		
-		// // Case insensitive?
-		if (!cli.args.caseSensitive) {
-			predicateRegex = new RegExp(predicateRegex, "i");
+		if (cli.args.basic) {
+			return subjectStrings.some(subject => predicateRegex.test(subject));
+		} else {
+			const processedSubjectStrings = subjectStrings.map(subject =>
+				canonizeStringForSmartMatching(subject)
+			);
+			
+			const boundaryOrNonWord = "(\\b|\\W)"; // only requires boundary if regexp extremity matches a letter
+			const smartPredicateRegex = new RegExp(
+				"(?<=" + boundaryOrNonWord + ")"
+				+ predicateRegex.source
+				+ "(?=" + boundaryOrNonWord + ")"
+			);
+
+			return processedSubjectStrings.some(subject => smartPredicateRegex.test(subject));
 		}
-		
-		// // Match
-		return subjectStrings.some(subject => predicateRegex.test(subject));
 	} else if (cli.args.predicateString) {
 		// Match string
-		let subjectStrings = page.getSearchableStrings();
-		let predicateString = cli.args.predicateString;
+		const subjectStrings = page.getSearchableStrings();
+		const predicateString = cli.args.predicateString;
 		
-		// // Case insensitive?
-		if (!cli.args.caseSensitive) {
-			subjectStrings = subjectStrings.map(subject => subject.toLowerCase());
-			predicateString = predicateString.toLowerCase();
+		if (cli.args.basic) {
+			return subjectStrings.some(subject => subject.includes(predicateString));
+		} else {
+			const processedSubjectStrings = subjectStrings.map(subject =>
+				canonizeStringForSmartMatching(subject)
+			);
+			const processedPredicate = escapeRegex(canonizeStringForSmartMatching(predicateString));
+			const predicateRegex = new RegExp("\\b" + processedPredicate + "\\b");
+
+			return processedSubjectStrings.some(subject => predicateRegex.test(subject));
 		}
-		
-		// // Match
-		return subjectStrings.some(subject => subject.includes(predicateString));
 	} else {
 		// Ask user
 		cli.tell("Opening " + chalk.bold(url) + ". Does this page match? " + chalk.gray("(y/n)"));
@@ -108,6 +120,16 @@ async function executePredicateForURL(url) {
 		
 		return await cli.ask("", Boolean);
 	}
+}
+
+function canonizeStringForSmartMatching(string) {
+	const lowercasedString = string.toLowerCase();
+	return lowercasedString.replace(/\s+/g, " ");
+}
+
+function escapeRegex(string) {
+	// From MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
+	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 class Page {
