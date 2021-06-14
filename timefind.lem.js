@@ -88,14 +88,10 @@ async function executePredicateForURL(url) {
 				canonizeStringForSmartMatching(subject)
 			);
 			
-			const boundaryOrNonWord = "(\\b|\\W)"; // only requires boundary if regexp extremity matches a letter
-			const smartPredicateRegex = new RegExp(
-				"(?<=" + boundaryOrNonWord + ")"
-				+ predicateRegex.source
-				+ "(?=" + boundaryOrNonWord + ")"
-			);
+			let processedPredicateRegex = addBoundaryRequirementToRegex(predicateRegex);
+			processedPredicateRegex = addFlagsToRegex(processedPredicateRegex, "i");
 
-			return processedSubjectStrings.some(subject => smartPredicateRegex.test(subject));
+			return processedSubjectStrings.some(subject => processedPredicateRegex.test(subject));
 		}
 	} else if (cli.args.predicateString) {
 		// Match string
@@ -108,10 +104,14 @@ async function executePredicateForURL(url) {
 			const processedSubjectStrings = subjectStrings.map(subject =>
 				canonizeStringForSmartMatching(subject)
 			);
-			const processedPredicate = escapeRegex(canonizeStringForSmartMatching(predicateString));
-			const predicateRegex = new RegExp("\\b" + processedPredicate + "\\b");
+			
+			const processedPredicateString = escapeStringForRegex(canonizeStringForSmartMatching(predicateString));
+			const predicateRegex = new RegExp(processedPredicateString);
+			
+			let processedPredicateRegex = addBoundaryRequirementToRegex(predicateRegex);
+			processedPredicateRegex = addFlagsToRegex(processedPredicateRegex, "i");
 
-			return processedSubjectStrings.some(subject => predicateRegex.test(subject));
+			return processedSubjectStrings.some(subject => processedPredicateRegex.test(subject));
 		}
 	} else {
 		// Ask user
@@ -127,7 +127,25 @@ function canonizeStringForSmartMatching(string) {
 	return lowercasedString.replace(/\s+/g, " ");
 }
 
-function escapeRegex(string) {
+function addBoundaryRequirementToRegex(regex) {
+	const boundaryOrNonWord = "(\\b|\\W)"; // only requires boundary if regex extremity matches a letter
+	
+	const newRegexSource = 
+		"(?<=" + boundaryOrNonWord + ")"
+		+ regex.source
+		+ "(?=" + boundaryOrNonWord + ")";
+	
+	return new RegExp(newRegexSource, regex.flags);
+}
+
+function addFlagsToRegex(regex, newFlags) {
+	const allFlags = regex.flags + newFlags;
+	const dedupedFlags = npm.dedupe(allFlags.split("")).join("");
+	
+	return new RegExp(regex.source, dedupedFlags);
+}
+
+function escapeStringForRegex(string) {
 	// From MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
 	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
