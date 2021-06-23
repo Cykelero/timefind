@@ -71,13 +71,13 @@ async function evaluateURL(url) {
 }
 
 async function executePredicateForURL(url) {
-	const page = await Page.forURL(url);
-	
 	if (cli.args.predicateFunction) {
 		// Execute function
+		const page = await Page.forURL(url);
 		return cli.args.predicateFunction(page.dom);
 	} else if (cli.args.predicateRegex) {
 		// Match regex
+		const page = await Page.forURL(url);
 		const subjectStrings = page.getSearchableStrings();
 		const predicateRegex = cli.args.predicateRegex;
 		
@@ -95,6 +95,7 @@ async function executePredicateForURL(url) {
 		}
 	} else if (cli.args.predicateString) {
 		// Match string
+		const page = await Page.forURL(url);
 		const subjectStrings = page.getSearchableStrings();
 		const predicateString = cli.args.predicateString;
 		
