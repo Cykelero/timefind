@@ -10,6 +10,8 @@ For example, you can search for the first mention of the iPhone on Apple's homep
 </pre>
 
 <pre>
+Looking for string predicate <strong>iphone</strong>.
+
 <strong>Getting snapshot list for apple.com...</strong>
 Got 212,432 snapshots, from 96-10-23 18:55:02 to 21-05-30 14:37:26.
 

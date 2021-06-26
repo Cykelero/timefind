@@ -243,6 +243,13 @@ function closestTimeIndexInArray(array, time) {
 }
 
 // Run
+let filteredMementos = null;
+
+if (!cli.args.pageURL && !cli.args.clearCache) {
+	cli.tell("You need to specify a page URL to search.");
+	process.exit(1);
+}
+
 if (cli.args.clearCache) {
 	cli.tell("Clearing network request cache...");
 	cacheFolder.empty(true);
@@ -250,7 +257,22 @@ if (cli.args.clearCache) {
 	process.exit(0);
 }
 
-let filteredMementos = null;
+// // Announce predicate
+if (cli.args.predicateFunction) {
+	cli.tell(`Looking for function predicate ${chalk.magenta(
+		`${cli.args.predicateFunction}`
+	)}.`);
+} else if (cli.args.predicateRegex) {
+	cli.tell(`Looking for regex predicate ${chalk.magenta(
+		`/${cli.args.predicateRegex.source}/${cli.args.predicateRegex.flags}`
+	)}.`);
+} else if (cli.args.predicateString) {
+	cli.tell(`Looking for string predicate ${chalk.magenta(`“${cli.args.predicateString}”`)}.`);
+} else {
+	cli.tell(`No predicate: ${chalk.magenta(`interactive find”`)}.`);
+}
+
+cli.tell("");
 
 // // Get memento list
 cli.tell(chalk.blue(`Getting snapshot list for ${cli.args.pageURL}...`));
