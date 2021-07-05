@@ -269,7 +269,7 @@ if (cli.args.predicateFunction) {
 } else if (cli.args.predicateString) {
 	cli.tell(`Looking for string predicate ${chalk.magenta(`“${cli.args.predicateString}”`)}.`);
 } else {
-	cli.tell(`No predicate: ${chalk.magenta(`interactive find”`)}.`);
+	cli.tell(`No predicate: ${chalk.magenta(`interactive find`)}.`);
 }
 
 cli.tell("");
