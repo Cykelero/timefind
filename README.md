@@ -65,17 +65,17 @@ Use a different kind of predicate, like a regex or a function, using predicate a
 
 #### Predicate types
 
-- [**#1 -s --string:** specify a string predicate](#1-s-string-specify-a-string-predicate)
-- [**-r --regex:** specify a regular expression predicate](#r-regex-specify-a-regular-expression-predicate)
-- [**-f --function:** specify a function predicate](#f-function-specify-a-function-predicate)
+- [**#1 -s --string:** specify a string predicate](#1--s---string-specify-a-string-predicate)
+- [**-r --regex:** specify a regular expression predicate](#-r---regex-specify-a-regular-expression-predicate)
+- [**-f --function:** specify a function predicate](#-f---function-specify-a-function-predicate)
 - [No predicate: interactive mode](#no-predicate-interactive-mode)
 
 #### Search behavior
 
-- [**-i --inverse:** inverse the predicate](#i-inverse-inverse-the-predicate)
-- [**--oldest, --newest:** restrict the search timeframe](#oldest-newest-restrict-the-search-timeframe)
-- [**-a --full-source:** don&#39;t limit search to user-visible text](#a-full-source-don-39-t-limit-search-to-user-visible-text)
-- [**-b --no-smart:** disable smart matching](#b-no-smart-disable-smart-matching)
+- [**-i --inverse:** inverse the predicate](#-i---inverse-inverse-the-predicate)
+- [**--oldest, --newest:** restrict the search timeframe](#--oldest---newest-restrict-the-search-timeframe)
+- [**-a --full-source:** don&#39;t limit search to user-visible text](#-a---full-source-dont-limit-search-to-user-visible-text)
+- [**-b --no-smart:** disable smart matching](#-b---no-smart-disable-smart-matching)
 
 ### `#1 -s --string`: specify a string predicate
 
@@ -89,7 +89,7 @@ For instance, look for when the Undertale site started mentionned merchandise:
 ### `-r --regex`: specify a regular expression predicate
 
 To match, a page must match the regex.  
-You can omit the regex's surrounding slashes, except if you want to specify flags. (although by default, most flags are redundant because of [smart matching](#b-no-smart-disable-smart-matching)  
+You can omit the regex's surrounding slashes, except if you want to specify flags. (although by default, most flags are redundant because of [smart matching](#-b---no-smart-disable-smart-matching)  
 Make sure to escape backslashes.
 
 For instance, find when a Wikipedia reached a million articles:
