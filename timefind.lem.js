@@ -294,16 +294,21 @@ if (cli.args.oldest || cli.args.newest) {
 		: allMementos.length - 1;
 	
 	filteredMementos = allMementos.slice(oldestIndex, newestIndex);
-	filteredText = ` (out of ${format.number(allMementos.length, "snapshot", 0)})`;
+	filteredText = ` (filtered from ${format.number(allMementos.length, "total snapshot", 0)})`;
 } else {
 	filteredMementos = allMementos;
 }
 
 if (filteredMementos.length < 2) {
+	const totalCountString = format.number(allMementos.length, "snapshot", 0);
+	const filteredCountString = format.number(filteredMementos.length, "snapshot", 0);
+	
+	const filteringNote = allMementos.length > filteredMementos.length ? ` after filtering (${totalCountString} total)` : "";
+	
 	if (filteredMementos.length === 0) {
-		cli.tell(chalk.red(`Can't perform search: no snapshot available.`));
+		cli.tell(chalk.red(`Can't perform search: no snapshot available${filteringNote}.`));
 	} else {
-		cli.tell(chalk.red(`Can't perform search: only ${format.number(filteredMementos.length, "snapshot", 0)} available.`));
+		cli.tell(chalk.red(`Can't perform search: only ${filteredCountString} available${filteringNote}.`));
 	}
 	process.exit(1);
 }
