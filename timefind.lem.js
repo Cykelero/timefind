@@ -293,7 +293,7 @@ if (cli.args.oldest || cli.args.newest) {
 		? closestTimeIndexInArray(allTimes, cli.args.newest.unix())
 		: allMementos.length - 1;
 	
-	filteredMementos = allMementos.slice(oldestIndex, newestIndex);
+	filteredMementos = allMementos.slice(oldestIndex, newestIndex + 1);
 	filteredText = ` (filtered from ${format.number(allMementos.length, "total snapshot", 0)})`;
 } else {
 	filteredMementos = allMementos;
