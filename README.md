@@ -10,7 +10,7 @@ For example, you can search for the first mention of the iPhone on Apple's homep
 </pre>
 
 <pre>
-Looking for string predicate <strong>iphone</strong>.
+Looking for string predicate <strong>“iphone”</strong>.
 
 <strong>Getting snapshot list for apple.com...</strong>
 Got 212,432 snapshots, from 96-10-23 18:55:02 to 21-05-30 14:37:26.
@@ -65,7 +65,7 @@ Use a different kind of predicate, like a regex or a function, using predicate a
 
 #### Predicate types
 
-- [**#1 -s --string:** specify a string predicate](#1--s---string-specify-a-string-predicate)
+- [**#1 --string:** specify a string predicate](#1---string-specify-a-string-predicate)
 - [**-r --regex:** specify a regular expression predicate](#-r---regex-specify-a-regular-expression-predicate)
 - [**-f --function:** specify a function predicate](#-f---function-specify-a-function-predicate)
 - [No predicate: interactive mode](#no-predicate-interactive-mode)
@@ -77,7 +77,7 @@ Use a different kind of predicate, like a regex or a function, using predicate a
 - [**-a --full-source:** don&#39;t limit search to user-visible text](#-a---full-source-dont-limit-search-to-user-visible-text)
 - [**-b --no-smart:** disable smart matching](#-b---no-smart-disable-smart-matching)
 
-### `#1 -s --string`: specify a string predicate
+### `#1 --string`: specify a string predicate
 
 The default option. To match, a page must contain the string.
 
