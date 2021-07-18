@@ -1,0 +1,22 @@
+{
+  "name": "timefind",
+  "version": "1.0.0",
+  "description": "Search a website's history.",
+  "bin": {
+    "timefind": "run-with-tasklemon.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cykelero/timefind.git"
+  },
+  "author": "Nathan Manceaux-Panot",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Cykelero/timefind/issues"
+  },
+  "homepage": "https://github.com/Cykelero/timefind#readme",
+  "dependencies": {
+    "cross-spawn": "^6.0.5",
+    "tasklemon": "^0.3.0"
+  }
+}
