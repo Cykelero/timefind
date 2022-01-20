@@ -1,10 +1,5 @@
-#!/usr/bin/env lemon
-#version 0.2
-
-#require chalk@4.1.2
-#require dedupe@3.0.2
-#require jsdom@19.0.0
-#require open@8.4.0
+#!/usr/bin/env tasklemon-v0.4
+// tl:require: chalk@4.1.2, dedupe@3.0.2, jsdom@19.0.0, open@8.4.0
 
 cli.accept({
 	pageURL: ["#0", String, "The URL to a webpage to search"],
