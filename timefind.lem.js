@@ -13,10 +13,8 @@ cli.accept({
 	basic: ["-b --no-smart", Boolean, "Makes the predicate case-sensitive, doesn't collapse white space, and disables word boundary requirement. Only affects string and regex predicates."],
 	
 	oldest: ["--oldest", moment, "The date of the oldest snapshot to consider"],
+	
 	newest: ["--newest", moment, "The date of the newest snapshot to consider"],
-	
-	openResults: ["-o --open --XXXFINDDIFFERENTLETTER", Boolean, "Opens the result snapshots when search is done XXX"],
-	
 	noCache: ["--no-cache", Boolean, "Skips the network request cache"],
 	clearCache: ["--clear-cache", Boolean, "Clears the network request cache"]
 });
@@ -421,9 +419,3 @@ cli.tell("");
 cli.tell(chalk.blue("Bisecting completed!"));
 cli.tell(`Last non-matching snapshot is ${chalk.bold(lastMiss)}.`);
 cli.tell(`First matching snapshot is ${chalk.bold(firstMatching)}.`);
-
-// // Open result snapshots
-if (cli.args.openResults) {
-	npm.open(lastMiss.url);
-	npm.open(firstMatching.url);
-}
