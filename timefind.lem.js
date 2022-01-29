@@ -15,6 +15,8 @@ cli.accept({
 	oldest: ["--oldest", moment, "The date of the oldest snapshot to consider"],
 	newest: ["--newest", moment, "The date of the newest snapshot to consider"],
 	
+	openResults: ["-o --open --XXXFINDDIFFERENTLETTER", Boolean, "Opens the result snapshots when search is done XXX"],
+	
 	noCache: ["--no-cache", Boolean, "Skips the network request cache"],
 	clearCache: ["--clear-cache", Boolean, "Clears the network request cache"]
 });
@@ -169,14 +171,39 @@ class Page {
 			return [this.source];
 		} else {
 			// Search user-visible text only
-			const result = [this.dom.body.textContent];
-		
+			const result = [];
+			
+			// // Node content
+			const textNodes = [];
+			
+			// // Find all text nodes
+			const textNodeTreeWalker = this.dom.createTreeWalker(
+				this.dom.body,
+				4, // NodeFilter.SHOW_TEXT
+				null, // no filter
+				false // don't expand entity references
+			);
+			
+			let currentTextNode;
+			while (currentTextNode = textNodeTreeWalker.nextNode()) {
+				textNodes.push(currentTextNode);
+			}
+			
+			// // // Concatenate all their text (both with and without space, to account for different use cases)
+			const allNodeStrings = textNodes
+				.map(textNode => textNode.textContent.trim())
+				.filter(text => text !== "");
+			
+			result.push(allNodeStrings.join());
+			result.push(allNodeStrings.join(" "));
+			
+			// // Readable attributes
 			const annotatedElements = this.dom.querySelectorAll("[alt], [title]");
 			for (let element of annotatedElements) {
 				if (element.alt) result.push(element.alt);
 				if (element.title) result.push(element.title);
 			}
-		
+			
 			return result;
 		}
 	}
@@ -394,3 +421,9 @@ cli.tell("");
 cli.tell(chalk.blue("Bisecting completed!"));
 cli.tell(`Last non-matching snapshot is ${chalk.bold(lastMiss)}.`);
 cli.tell(`First matching snapshot is ${chalk.bold(firstMatching)}.`);
+
+// // Open result snapshots
+if (cli.args.openResults) {
+	npm.open(lastMiss.url);
+	npm.open(firstMatching.url);
+}
