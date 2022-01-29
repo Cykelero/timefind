@@ -1,6 +1,6 @@
 {
   "name": "timefind",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Search a website's history.",
   "bin": {
     "timefind": "run-with-tasklemon.js"
