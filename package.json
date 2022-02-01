@@ -17,6 +17,6 @@
   "homepage": "https://github.com/Cykelero/timefind#readme",
   "dependencies": {
     "cross-spawn": "^6.0.5",
-    "tasklemon": "^0.3.0"
+    "tasklemon": "^0.4.1"
   }
 }
