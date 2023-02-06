@@ -77,6 +77,9 @@ Use a different kind of predicate, like a regex or a function, using predicate a
 - [**-a --full-source:** don&#39;t limit search to user-visible text](#-a---full-source-dont-limit-search-to-user-visible-text)
 - [**-b --no-smart:** disable smart matching](#-b---no-smart-disable-smart-matching)
 
+#### Other
+- [**-o --open:** open results when done](#-o---open-open-results-when-done)
+
 ### `#1 --string`: specify a string predicate
 
 The default option. To match, a page must contain the string.
@@ -163,6 +166,10 @@ By default, for string and regex predicates, timefind performs smart matching:
 - **only complete words match**: for instance, the predicate “possible” will not match the word “impossible”
 
 The `--no-smart` option disables these three behaviors.
+
+### `-o --open`: open results when done
+
+Once the search is successful, this causes the two result snapshots to be opened in your browser: the _last non-matching_ snapshot, and the _first matching_ snapshot.
 
 ## 👩🏿‍💻 Contributing
 
