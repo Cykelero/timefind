@@ -334,6 +334,7 @@ if (filteredMementos.length < 2) {
 		cli.tell(chalk.red(`Can't perform search: no snapshot available${filteringNote}.`));
 	} else {
 		cli.tell(chalk.red(`Can't perform search: only ${filteredCountString} available${filteringNote}.`));
+		cli.tell(`The only snapshot is ${chalk.bold(filteredMementos[0])}.`);
 	}
 	process.exit(1);
 }
