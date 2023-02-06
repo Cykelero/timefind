@@ -1,4 +1,4 @@
-#!/usr/bin/env tasklemon-v0.4
+#!/usr/bin/env tasklemon-v0.5
 // tl:require: chalk@4.1.2, dedupe@3.0.2, jsdom@19.0.0, open@8.4.0
 
 cli.accept({
