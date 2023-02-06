@@ -81,15 +81,16 @@ Use a different kind of predicate, like a regex or a function, using predicate a
 
 The default option. To match, a page must contain the string.
 
-For instance, look for when the Undertale site started mentionned merchandise:
+For instance, look for when the Undertale site started mentioning merchandise:
 <pre>
 <b>$ timefind</b> undertale.com merch
 </pre>
 
 ### `-r --regex`: specify a regular expression predicate
 
-To match, a page must match the regex.  
-You can omit the regex's surrounding slashes, except if you want to specify flags. (although by default, most flags are redundant because of [smart matching](#-b---no-smart-disable-smart-matching)  
+To match, a page must match the regex.
+
+You can omit the regex's surrounding slashes, except if you want to specify flags. (although by default, most flags are redundant because of [smart matching](#-b---no-smart-disable-smart-matching))  
 Make sure to escape backslashes.
 
 For instance, find when a Wikipedia reached a million articles:
@@ -99,7 +100,8 @@ For instance, find when a Wikipedia reached a million articles:
 
 ### `-f --function`: specify a function predicate
 
-The supplied function is called for each page, receiving the page's root `Document` node. It must return `true` if the page matches.  
+The supplied function is called for each page, receiving the page's root `Document` node. It must return `true` if the page matches.
+
 Make sure to escape backslashes and nested quotes.  
 
 For instance, search for the moment where the W3 published their one-thousandth standard:
@@ -113,7 +115,7 @@ If you don't specify a predicate, timefind will be in interactive mode: for each
 
 Use this as a last resort, as this way of searching is significantly slower than non-interactive mode.
 
-You could for instance try to find when Stripe last redesigned their website. Reply yes when you see the new design, and no when you see an older one:
+You could for instance try to find when Stripe last redesigned their website. Reply with yes when you see their latest design, and no when you see an older one:
 <pre>
 <b>$ timefind</b> stripe.com
 </pre>
@@ -164,4 +166,6 @@ The `--no-smart` option disables these three behaviors.
 
 ## 👩🏿‍💻 Contributing
 
-If you'd like to contribute code to timefind (thank you for considering it!), be warned: timefind is written using [Tasklemon](https://github.com/cykelero/tasklemon). The API is nice and all, but Tasklemon wasn't meant for creating npm packages; the main resulting limitation is that the source code pretty much has to be all contained within a single file.
+Want to contribute code to timefind? (thank you for considering it!)
+
+Submit a PR and let's talk about it! Or just send feedback—that's very useful too. Open an issue, or send me a note [on Mastodon](https://mas.to/@Cykelero).
